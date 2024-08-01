@@ -1,0 +1,133 @@
+`cpp
+#include <iostream>
+#include <fstream>
+#include <random>
+#include <vector>
+#include <string>
+
+// Структура для хранения информации о купюрах
+struct Denomination {
+    int value;
+    int count;
+};
+
+// Список доступных номиналов купюр
+std::vector<Denomination> denominations = {
+    {100, 0}, {50, 0}, {20, 0}, {10, 0}, {5, 0}, {1, 0}
+};
+
+// Общая сумма денег в банкомате
+int totalMoney = 0;
+
+// Имя файла для сохранения состояния банкомата
+const std::string STATE_FILE = "atm_state.bin";
+
+// Функция для проверки существования файла
+bool fileExists(const std::string& filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
+
+// Функция для загрузки данных из файла или инициализации пустого банкомата
+void loadState() {
+    if (fileExists(STATE_FILE)) {
+        std::ifstream file(STATE_FILE, std::ios::binary);
+        for (auto& denomination : denominations) {
+            file.read(reinterpret_cast<char*>(&denomination.count), sizeof(int));
+        }
+        file.read(reinterpret_cast<char*>(&totalMoney), sizeof(int));
+    } else {
+        // Инициализация пустого банкомата
+        for (auto& denomination : denominations) {
+            denomination.count = 0;
+        }
+        totalMoney = 0;
+    }
+}
+
+// Функция для отображения текущего состояния банкомата
+void displayState() {
+    std::cout << "Текущее состояние банкомата:" << std::endl;
+    for (const auto& denomination : denominations) {
+        std::cout << denomination.value << " RUB: " << denomination.count << " шт." << std::endl;
+    }
+    std::cout << "Общая сумма: " << totalMoney << " RUB" << std::endl;
+}
+
+// Функция для добавления купюр в банкомат
+void addCash() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, denominations.size() - 1);
+
+    int count = rand() % 10 + 1;
+    int denomination = denominations[dis(gen)].value;
+
+    for (auto& d : denominations) {
+        if (d.value == denomination) {
+            d.count += count;
+            totalMoney += count * d.value;
+            std::cout << "Добавлено " << count << " купюр по " << d.value << " RUB" << std::endl;
+            break;
+        }
+    }
+}
+
+// Функция для имитации снятия денег пользователем
+bool withdrawCash(int amount) {
+    int remaining = amount;
+    std::vector<int> denomsToWithdraw;
+
+    for (const auto& denomination : denominations) {
+        int count = std::min(remaining / denomination.value, denomination.count);
+        remaining -= count * denomination.value;
+        denomination.count -= count;
+        totalMoney -= count * denomination.value;
+        denomsToWithdraw.push_back(count);
+    }
+
+    if (remaining > 0) {
+        // Невозможно выдать запрошенную сумму
+        for (size_t i = 0; i < denomsToWithdraw.size(); i++) {
+            denominations[i].count += denomsToWithdraw[i];
+        }
+        totalMoney += amount - remaining;
+        std::cout << "Ошибка: невозможно выдать запрошенную сумму" << std::endl;
+        return false;
+    }
+
+    std::cout << "Выдано: ";
+    for (size_t i = 0; i < denominations.size(); i++) {
+        if (denomsToWithdraw[i] > 0) {
+            std::cout << denomsToWithdraw[i] << " x " << denominations[i].value << " RUB, ";
+        }
+    }
+    std::cout << std::endl;
+    return true;
+}
+
+// Функция для сохранения состояния банкомата в файл
+void saveState() {
+    std::ofstream file(STATE_FILE, std::ios::binary);
+    for (const auto& denomination : denominations) {
+        file.write(reinterpret_cast<const char*>(&denomination.count), sizeof(int));
+    }
+    file.write(reinterpret_cast<const char*>(&totalMoney), sizeof(int));
+}
+
+int main() {
+    loadState();
+
+    while (true) {
+        displayState();
+
+        std::string command;
+        std::cout << "Введите команду (+, - или выход): ";
+        std::cin >> command;
+
+        if (command == "+") {
+            addCash();
+        } else if (command == "-") {
+            int amount;
+            std::cout << "Введите сумму для снятия: ";
+            std::cin >> amount;
