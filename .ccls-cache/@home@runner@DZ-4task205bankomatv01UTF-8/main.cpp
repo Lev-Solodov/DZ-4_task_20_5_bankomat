@@ -52,7 +52,27 @@ void loadAtmState(ATMState& state) {
     if (file.is_open()) {
         file.read(reinterpret_cast<char*>(&state), sizeof(state));
         file.close();
-        std::cout << "ATM state loaded from file." << std::endl;
+        std::cout << "ATM state loaded from file.\n";
+        // Загружаю купюры из файла moneyFill.txt
+        std::ifstream moneyFillFile("moneyFill.txt");
+        if (moneyFillFile.is_open()) {
+            int denomination; //наименования номинала купюр 100, 200, 500, 1000, 2000, 5000
+            while (moneyFillFile >> denomination ) {
+                bank.emplace_back(denomination); //было bank.push_back(denomination);
+            }
+            moneyFillFile.close();
+        }
+        else {
+            std::cerr << "Не удалось открыть файл moneyFill.txt для чтения..\n";
+        }
+        // Сортирую купюры по убыванию
+        std::sort(bank.begin(), bank.end(), std::greater<int>());
+        // Вывожу информацию о текущем состоянии банкомата
+        std::cout << "Current ATM state:\n";
+        for (int i = 0; i < NUM_DENOMINATIONS; i++){
+            std::cout << BANKNOTES[i] << ": " << state.bills[i] << "\n";
+        }
+        std::cout << "Total amount: " << state.totalAmount << " rubles." << std::endl;
     }
     else {
         std::memset(&state, 0, sizeof(state));
@@ -63,12 +83,10 @@ void loadAtmState(ATMState& state) {
 void displayAtmState(const ATMState& state, std::vector<int>& bank) {
     // Отображаю информацию о состоянии банкомата на экране
     //показываю сколько купюр в банкомате
-    std::cout << "Bills in ATM: ";
     for (int i = 0; i < bank.size(); ++i) {
         bank[i];
     }
-    std::cout << std::endl;
-    std::cout << "В банкомате имеются следующие купюры:\n";
+    std::cout << "\nВ банкомате имеются следующие купюры:\n";
     for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
         int count = 0;
         for (int denomination : bank) {
@@ -76,16 +94,16 @@ void displayAtmState(const ATMState& state, std::vector<int>& bank) {
                 count++;
             }
         }
-        std::cout << "Номинал " << BANKNOTES[i] << ": " << count << " купюр." << std::endl;
+        std::cout << "Номинал " << BANKNOTES[i] << ": " << count << " купюр.\n";
     }
-    std::cout << "Купюр: " << bank.size() << " на общую сумму: " << state.totalAmount << " рублей." << std::endl;
+    std::cout << "Купюр: " << bank.size() << " на общую сумму: " << state.totalAmount << " рублей.\n";
     // Запись оставшихся купюр в файл
-    std::ofstream moneyFile("moneyFill.txt", std::ios::app);
+    //std::ofstream moneyFile("moneyFill.txt", std::ios::app);
+    std::ofstream moneyFile("moneyFill.txt");
     if (!moneyFile.is_open()) {
-        std::cerr << "Не удалось открыть файл для записи" << std::endl;
+        std::cerr << "Не удалось открыть файл для записи\n";
         return;
     }
-    moneyFile << "Оставшиеся купюры:" << std::endl;
     for (int denomination : bank) {
         moneyFile << denomination << std::endl;
     }
@@ -110,7 +128,7 @@ void fillAtm(ATMState& state) {
     // Записываю данные в файл
     std::ofstream moneyFile("moneyFill.txt");
     if (!moneyFile.is_open()) {
-        std::cerr << "Не удалось открыть файл для записи" << std::endl;
+        std::cerr << "Не удалось открыть файл для записи\n";
         return;
     }
     // Выполняю итерацию по вектору банка и записываю каждый элемент в файл
@@ -123,19 +141,18 @@ void fillAtm(ATMState& state) {
 //снятие денег
 /*При вводе «−» симулируется снятие пользователем денег.
 Пользователь указывает сумму с точностью до 100 рублей. Считайте, что каждый клиент обладает неограниченным балансом в системе и теоретически может снять любую сумму. Выдача происходит начиная с купюр большего номинала. Если запрошенная сумма не может быть снята из-за отсутствия подходящих купюр в машине, показывается сообщение, что эта операция невозможна. После выдачи денег на экран выдаётся информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма.*/
-//нужно создать файл  std::ofstream file("cashWithdrawal.txt");
 bool withdrawMoney(ATMState& state, int amount, std::vector<int>& bank) {
     if (amount % 100 != 0) {
-        std::cout << "Сумма должна быть кратна 100." << std::endl;
+        std::cout << "Сумма должна быть кратна 100.\n";
         return false;
     }
     if (amount < 0 || amount > state.totalAmount) {
-        std::cout << "Недостаточно средств в банкомате." << std::endl;
+        std::cout << "Недостаточно средств в банкомате.\n";
         return false;
     }
     state.totalAmount -= amount;
     // Выдача денег
-    std::cout << "Dispensed " << amount << " rubles." << std::endl;
+    std::cout << "Выдано " << amount << " рублей.\n";
     std::cout << "Выдача произведена успешно.";
     for (int i = NUM_DENOMINATIONS - 1; i >= 0 && amount > 0; --i) {
         while (amount >= BANKNOTES[i] && bank.size() > 0) {
@@ -144,7 +161,7 @@ bool withdrawMoney(ATMState& state, int amount, std::vector<int>& bank) {
                 amount -= BANKNOTES[i];
             }
             else {
-                break; // Move to the next denomination
+                break; // переходим к следующей купюре
             }
         }
     }
@@ -153,9 +170,19 @@ bool withdrawMoney(ATMState& state, int amount, std::vector<int>& bank) {
 }
 
 /*При выходе из программы сохраняем состояние банкомата в файл.*/
-void saveAtmState(const ATMState& state) {
-    std::ofstream file("atm_state.bin", std::ios::app | std::ios::binary); //дописываю файл atm_state.bin в бинарном виде
+void saveAtmState(ATMState& state) {
+    std::ofstream file("atm_state.bin", std::ios::binary); //дописываю файл atm_state.bin в бинарном виде
     if (file.is_open()) {
+        // Подсчитываем количество купюр каждого номинала
+        for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
+            state.bills[i] = 0;
+            for (int denomination : bank) {
+                if (denomination == BANKNOTES[i]) {
+                    state.bills[i]++;
+                }
+            }
+        }
+        // Записываем состояние в файл
         file.write(reinterpret_cast<const char*>(&state), sizeof(state));
         file.close();
         std::cout << "ATM state saved to file." << std::endl;
@@ -167,7 +194,7 @@ void saveAtmState(const ATMState& state) {
 
 int main() {
     setlocale(LC_ALL, ""); //setlocale(LC_ALL, "Rus");
-    std::cout << "Задание 4. Симуляция работы банкомата v0_1 UTF-8" << std::endl; //Инициализирую строку как широкие символы, используя префикс L перед строками.
+    std::cout << "Задание 4. Симуляция работы банкомата v0_1 UTF-8\n"; //Инициализирую строку как широкие символы, используя префикс L перед строками.
     ATMState atmState;
     loadAtmState(atmState);
 
@@ -188,14 +215,14 @@ int main() {
             break;
         case 'q':
             saveAtmState(atmState);
-            std::cout << "Exiting program." << std::endl;
+            std::cout << "Exiting program.\n";
             break;
         default:
-            std::cout << "Invalid command." << std::endl;
+            std::cout << "Invalid command.\n";
             break;
         }
     } while (command != 'q');
 
-    std::cout << "Возвращайтесь скорее. Пока :-) !" << std::endl;
+    std::cout << "Возвращайтесь скорее. Пока :-) !\n";
     return 0;
 }
