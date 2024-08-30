@@ -5,19 +5,33 @@
 
 Учтите следующее:
 
-В банкомате могут храниться только бумажные купюры номиналом 100, 200, 500, 1 000, 2 000 и 5 000 рублей.
-Максимально в банкомате может храниться только 1 000 купюр. Все они записываются в отдельный файл.
-У банкомата, как у устройства, две основных операции — снятие денег пользователем и наполнение деньгами инкассаторами банка.
-Состояние банкомата должно храниться в отдельном бинарном файле, автономно. Хранение в бинарном виде улучшает производительность программы и уменьшает размер данных.
-Банкомат работает следующим образом:
+В банкомате могут храниться только бумажные купюры номиналом 100, 200, 500, 1
+000, 2 000 и 5 000 рублей. Максимально в банкомате может храниться только 1 000
+купюр. Все они записываются в отдельный файл. У банкомата, как у устройства, две
+основных операции — снятие денег пользователем и наполнение деньгами
+инкассаторами банка. Состояние банкомата должно храниться в отдельном бинарном
+файле, автономно. Хранение в бинарном виде улучшает производительность программы
+и уменьшает размер данных. Банкомат работает следующим образом:
 
-При старте программа проверяет наличие файла .bin. Если он есть (данные по банкомату были сохранены), данные загружаются и на экран выводится информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма. Если файла нет — банкомат «пустой».
-При вводе «+» заполняются недостающие купюры и выводится информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма. Количество купюр рассчитывается так, чтобы банкомат был заполнен полностью. Все купюры при этом выбираются случайным образом.
-При вводе «−» симулируется снятие пользователем денег. Пользователь указывает сумму с точностью до 100 рублей. Считайте, что каждый клиент обладает неограниченным балансом в системе и теоретически может снять любую сумму. Выдача происходит начиная с купюр большего номинала. Если запрошенная сумма не может быть снята из-за отсутствия подходящих купюр в машине, показывается сообщение, что эта операция невозможна. После выдачи денег на экран выдаётся информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма.
-При выходе из программы сохраняем состояние банкомата в файл.
+При старте программа проверяет наличие файла .bin. Если он есть (данные по
+банкомату были сохранены), данные загружаются и на экран выводится информация о
+текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая
+сумма. Если файла нет — банкомат «пустой». При вводе «+» заполняются недостающие
+купюры и выводится информация о текущем состоянии банкомата: сколько сейчас
+купюр каждого номинала и общая сумма. Количество купюр рассчитывается так, чтобы
+банкомат был заполнен полностью. Все купюры при этом выбираются случайным
+образом. При вводе «−» симулируется снятие пользователем денег. Пользователь
+указывает сумму с точностью до 100 рублей. Считайте, что каждый клиент обладает
+неограниченным балансом в системе и теоретически может снять любую сумму. Выдача
+происходит начиная с купюр большего номинала. Если запрошенная сумма не может
+быть снята из-за отсутствия подходящих купюр в машине, показывается сообщение,
+что эта операция невозможна. После выдачи денег на экран выдаётся информация о
+текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая
+сумма. При выходе из программы сохраняем состояние банкомата в файл.
 Рекомендации
 Вы можете хранить массив купюр целиком, помечая отсутствующие позиции нулями.
-Выход из программы рекомендуется сделать по отдельной команде, а команды «+» и «−» получать в цикле.
+Выход из программы рекомендуется сделать по отдельной команде, а команды «+» и
+«−» получать в цикле.
 
 
 Что оценивается
@@ -25,178 +39,119 @@
 Программы работают корректно.
 */
 
-#include <iostream>
-#include <fstream>
-#include <random>
 #include <cstring> // для memset
-//#include <numeric> // для std::accumulate
-#include <cstdlib> // библиотека для работы с памятью, преобразования текста в числа, генерации случайных чисел и другие утилиты std::rand()
-#include <ctime>   // включает заголовочный файл ctime, содержащий функции для работы с датой и временем std::time()
+#include <fstream>
+#include <iostream>
+#include <random>
+//#include <ctime>   // включает заголовочный файл ctime, содержащий функции для
+//работы с датой и временем std::time()
 #include <locale> //помощь для отображения кириличесских символов, т.е. русского языка
-//#include <filesystem> //для работы с файлами
-//#include <memory> //для работы с std::unique_ptr
-#include <algorithm> // для std::sort
-const int MAX_BILLS = 1000;
-const int BANKNOTES[] = { 100, 200, 500, 1000, 2000, 5000 };
-const int NUM_DENOMINATIONS = sizeof(BANKNOTES) / sizeof(BANKNOTES[0]);
-std::vector<int> bank;
+const int MAX_BILLS = 1000; //максимальное колличество купюр
+const int BANKNOTES[] = { 100,  200,  500, 1000, 2000, 5000 }; //массив с номиналами купюр
+const int NUM_DENOMINATIONS = sizeof(BANKNOTES) / sizeof(BANKNOTES[0]); //кол-во элементов в массиве BANKNOTES[], ктр. = 6 { //100, 200, 500, 1000, 2000, 5000 }
+std::vector<int> bank(NUM_DENOMINATIONS, 0);
 // Структура для хранения информации о купюрах
 struct ATMState {
-    int bills[NUM_DENOMINATIONS];
-    int totalAmount;
+    int bills[NUM_DENOMINATIONS] = { 0 };
+    int totalAmount = 0;
 };
-//инициализация банкомата
-/*При старте программа проверяет наличие файла .bin. Если он есть (данные по банкомату были сохранены), данные загружаются и на экран выводится информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма. Если файла нет — банкомат «пустой».*/
+//Ф-ция отображает текущее состояние банкомата
+void displayAtmState(ATMState& state) {
+    std::cout << "\nВ банкомате имеются следующие купюры:\n";
+    for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
+        std::cout << "Номинал " << BANKNOTES[i] << ": " << state.bills[i] << " купюр.\n";
+    }
+    // Вычисляю общее количество купюр
+    int totalBills = 0;
+    for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
+        totalBills += state.bills[i];
+    }
+    std::cout << "Купюр: " << totalBills << " на общую сумму: " << state.totalAmount << " рублей.\n";
+}
+//Ф-ция загружает ATMState из файла atm_state.bin, если он существует, в
+//противном случае инициализирует пустой ATM.
 void loadAtmState(ATMState& state) {
     std::ifstream file("atm_state.bin", std::ios::binary);
     if (file.is_open()) {
         file.read(reinterpret_cast<char*>(&state), sizeof(state));
-        file.close();
-        std::cout << "ATM state loaded from file.\n";
-        // Загружаю купюры из файла moneyFill.txt
-        std::ifstream moneyFillFile("moneyFill.txt");
-        if (moneyFillFile.is_open()) {
-            int denomination; //наименования номинала купюр 100, 200, 500, 1000, 2000, 5000
-            while (moneyFillFile >> denomination ) {
-                bank.emplace_back(denomination); //было bank.push_back(denomination);
-            }
-            moneyFillFile.close();
-        }
-        else {
-            //~ std::cerr << "Не удалось открыть файл moneyFill.txt для чтения..\n";
-            std::cerr << "The file moneyFill.txt could not be opened for reading.\n";
-        }
-        // Сортирую купюры по убыванию
-        std::sort(bank.begin(), bank.end(), std::greater<int>());
-        // Подсчитываю количество купюр каждого номинала
-        for (int i = 0; i < NUM_DENOMINATIONS; i++){
-            state.bills[i] = 0; // Initialize count for this denomination
-            for (denomination : bank) {
-                if (denomination == BANKNOTES[i]) {
-                    state.bills[i]++;
-                }
-            }
+        // Загружаю купюры/информацию из файлаatm_state.bin
+        state.totalAmount = 0; //обнуляю общую сумму для подсчёта новой
+        for (int i = 0; i < NUM_DENOMINATIONS; i++) {
+            state.totalAmount += state.bills[i] * BANKNOTES[i];
         }
         // Вывожу информацию о текущем состоянии банкомата
-        std::cout << "Current ATM state:\n";
-        for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
-            std::cout << BANKNOTES[i] << ": " << state.bills[i] << "\n";
-        }
-        std::cout << "Total amount: " << state.totalAmount << " rubles." << std::endl;
+        displayAtmState(state);
+        file.close();
+        std::cout << "ATM state loaded from file.\n";
     }
     else {
-        std::memset(&state, 0, sizeof(state));
-        std::cout << "ATM is empty." << std::endl;
+        std::memset(&state, 0, sizeof(state)); //см комментарий внизу кода
+        std::cout << "ATM is empty." << "\n";
     }
 }
-//показать состояние банкомата
-void displayAtmState(const ATMState& state, std::vector<int>& bank) {
-    // Отображаю информацию о состоянии банкомата на экране
-    //показываю сколько купюр в банкомате
-    for (int i = 0; i < bank.size(); ++i) {
-        bank[i];
-    }
-    std::wcout << L"\nВ банкомате имеются следующие купюры:\n";
-    for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
-        int count = 0;
-        for (int denomination : bank) {
-            if (denomination == BANKNOTES[i]) {
-                count++;
-            }
-        }
-        std::wcout << L"Номинал " << BANKNOTES[i] << ": " << count << L" купюр.\n";
-    }
-    std::wcout << L"Купюр: " << bank.size() << L" на общую сумму: " << state.totalAmount << L" рублей.\n";
-    // Запись оставшихся купюр в файл
-    //std::ofstream moneyFile("moneyFill.txt", std::ios::app);
-    std::ofstream moneyFile("moneyFill.txt");
-    if (!moneyFile.is_open()) {
-        //~ std::cerr << "Не удалось открыть файл для записи\n";
-        std::cerr << "The file could not be opened for writing\n";
-        return;
-    }
-    for (int denomination : bank) {
-        moneyFile << denomination << std::endl;
-    }
-    moneyFile.close();
-}
-/*При вводе «+» заполняются недостающие купюры и выводится информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма.
-Количество купюр рассчитывается так, чтобы банкомат был заполнен полностью.
-Все купюры при этом выбираются случайным образом.*/
-// Функция для заполнения банкомата
+// Функция для заполняет банкомат случайными купюрами до тех пор, пока он не заполнится
 void fillAtm(ATMState& state) {
-    if (bank.empty()) {
-        std::srand(static_cast<unsigned int>(std::time(nullptr)));
-        for (int i = 0; i < MAX_BILLS; ++i) {
+    // Ведём подсчёт всей суммы банкнот
+    int totalBills = 0;
+    for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
+        totalBills += state.bills[i];
+    }
+    if (totalBills < MAX_BILLS) { // Проверяем, сколько купюр уже есть
+      //одсчитываем сколько осталось банкнот для полного заполнения
+        int remainingBills = MAX_BILLS - totalBills;
+        for (int i = 0; i < remainingBills; ++i) { // Заполняем до MAX_BILLS
             int random_index = std::rand() % NUM_DENOMINATIONS;
-            bank.push_back(BANKNOTES[random_index]);
+            state.bills[random_index]++; // Увеличиваем количество купюр в банкомате
+            state.totalAmount += BANKNOTES[random_index]; // Обновляем общую сумму
         }
-        std::wcout << L"Банкомат заполнен!\n";
+        std::cout << "\nБанкомат пополнен!\n";
     }
     else {
-        std::wcout << L"Банкомат уже не пуст!\n";
+        std::cout << "\nБанкомат уже полон!\n";
     }
-    // Записываю данные в файл
-    std::ofstream moneyFile("moneyFill.txt");
-    if (!moneyFile.is_open()) {
-        //~ std::cerr << "Не удалось открыть файл для записи\n";
-        std::cerr << "The file could not be opened for writing\n";
-        return;
-    }
-    // Выполняю итерацию по вектору банка и записываю каждый элемент в файл
-    for (int BANKNOTES : bank) {
-        moneyFile << BANKNOTES << std::endl;
-    }
-    moneyFile.close(); // Close the file
-    displayAtmState(state, bank);
+    displayAtmState(state); // Передаем bank по ссылке
 }
-//снятие денег
-/*При вводе «−» симулируется снятие пользователем денег.
-Пользователь указывает сумму с точностью до 100 рублей. Считайте, что каждый клиент обладает неограниченным балансом в системе и теоретически может снять любую сумму. Выдача происходит начиная с купюр большего номинала. Если запрошенная сумма не может быть снята из-за отсутствия подходящих купюр в машине, показывается сообщение, что эта операция невозможна. После выдачи денег на экран выдаётся информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма.*/
-bool withdrawMoney(ATMState& state, int amount, std::vector<int>& bank) {
+//Ф-ция имитирует снятие денег
+bool withdrawMoney(ATMState& state, int amount) {
+    int remainingAmount = amount;
     if (amount % 100 != 0) {
-        std::wcout << L"Сумма должна быть кратна 100.\n";
+        std::cout << "Сумма должна быть кратна 100.\n";
         return false;
     }
     if (amount < 0 || amount > state.totalAmount) {
-        std::wcout << L"Недостаточно средств в банкомате.\n";
+        std::cout << "\nНедостаточно средств в банкомате.\n";
+        displayAtmState(state);
         return false;
     }
-    state.totalAmount -= amount;
     // Выдача денег
-    std::wcout << L"Выдано " << amount << L" рублей.\n";
-    std::wcout << L"Выдача произведена успешно.";
-    for (int i = NUM_DENOMINATIONS - 1; i >= 0 && amount > 0; --i) {
-        while (amount >= BANKNOTES[i] && bank.size() > 0) {
-            if (bank.back() == BANKNOTES[i]) {
-                bank.pop_back();
-                amount -= BANKNOTES[i];
-            }
-            else {
-                break; // переходим к следующей купюре
-            }
+    std::cout << "Выдано " << amount << " рублей по:\n";
+    for (int i = NUM_DENOMINATIONS - 1; i >= 0; --i) {
+        int denomination = BANKNOTES[i];
+        // int numBills = remainingAmount / denomination;
+        int numBills = std::min(remainingAmount / denomination, state.bills[i]); //получаем минимальное кол-во купюр
+        if (numBills > 0) {
+            state.bills[i] -= numBills;
+            remainingAmount -= numBills * denomination;
+            std::cout << numBills << " купюр(-а) номиналом " << denomination << " рублей.\n";
         }
     }
-    displayAtmState(state, bank);
+    state.totalAmount -= amount;
+    // Проверка, если выдача == 0
+    if (remainingAmount == 0) {
+        std::cout << "\nВыдача произведена успешно.\n";
+        displayAtmState(state);
+        return true;
+    }
     return true;
 }
 
-/*При выходе из программы сохраняем состояние банкомата в файл.*/
+//Ф-ция сохраняет текущее состояние банкомата в файл.
 void saveAtmState(ATMState& state) {
-    std::ofstream file("atm_state.bin", std::ios::binary); //дописываю файл atm_state.bin в бинарном виде
-    if (file.is_open()) {
-        // Подсчитываем количество купюр каждого номинала
-        for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
-            state.bills[i] = 0;
-            for (int denomination : bank) {
-                if (denomination == BANKNOTES[i]) {
-                    state.bills[i]++;
-                }
-            }
-        }
+    std::ofstream binFile("atm_state.bin", std::ios::binary); // открываю для записи файл atm_state.bin в бинарном виде
+    if (binFile.is_open()) {
         // Записываем состояние в файл
-        file.write(reinterpret_cast<const char*>(&state), sizeof(state));
-        file.close();
+        binFile.write(reinterpret_cast<const char*>(&state), sizeof(state));
+        binFile.close();
         std::cout << "ATM state saved to file." << std::endl;
     }
     else {
@@ -205,16 +160,14 @@ void saveAtmState(ATMState& state) {
 }
 
 int main() {
-    setlocale(LC_ALL, ""); //setlocale(LC_ALL, "Rus");
-    std::wcout << L"Задание 4. Симуляция работы банкомата v0_1 UTF-8\n"; //Инициализирую строку как широкие символы, используя префикс L перед строками.
+    setlocale(LC_ALL, "Rus"); // setlocale(LC_ALL, "Rus");
+    std::cout << "Задание 4. Симуляция работы банкомата v0_1 UTF-8\n"; //Инициализирую строку как широкие символы, используя префикс L перед строками.
     ATMState atmState;
     loadAtmState(atmState);
-
     char command;
     do {
         std::cout << "Enter command (+, -, or q to quit): ";
         std::cin >> command;
-
         switch (command) {
         case '+':
             fillAtm(atmState);
@@ -223,18 +176,25 @@ int main() {
             int amount;
             std::cout << "Enter the amount to withdraw (in 100 ruble increments): ";
             std::cin >> amount;
-            withdrawMoney(atmState, amount, bank);
+            withdrawMoney(atmState, amount);
             break;
         case 'q':
-            saveAtmState(atmState);
-            std::cout << "Exiting program.\n";
             break;
         default:
             std::cout << "Invalid command.\n";
             break;
         }
     } while (command != 'q');
-
-    std::wcout << L"Возвращайтесь скорее. Пока :-) !\n";
+    saveAtmState(atmState);
+    std::cout << "Exiting program.\n";
+    std::cout << "Возвращайтесь скорее. Пока :-) !\n";
     return 0;
 }
+/*отличие что std::memset(&state, 0, sizeof(state)) от
+for (int i = 0; i < MAX_BILLS; ++i) {
+        state.bills[i] = 0;
+}
+Функция std::memset(&state, 0, sizeof(state)) устанавливает все байты в памяти, на которую указывает &state, в значение 0. Это означает, что она обнуляет всю память, выделенную под переменную state, независимо от её структуры или размера.
+С другой стороны, цикл for выполняет итерацию по элементам массива state.bills и присваивает каждому элементу значение 0. Это значит, что он обнуляет только элементы массива state.bills, а не всю переменную state.
+Таким образом, основное отличие заключается в том, что std::memset работает с памятью, на которую указывает указатель, и устанавливает все байты этой памяти в заданное значение, тогда как цикл for работает с элементами массива и устанавливает значения этих элементов индивидуально.
+*/
