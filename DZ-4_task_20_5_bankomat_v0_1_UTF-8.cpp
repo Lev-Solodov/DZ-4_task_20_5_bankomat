@@ -49,7 +49,7 @@
 const int MAX_BILLS = 1000; //максимальное колличество купюр
 const int BANKNOTES[] = { 100,  200,  500, 1000, 2000, 5000 }; //массив с номиналами купюр
 const int NUM_DENOMINATIONS = sizeof(BANKNOTES) / sizeof(BANKNOTES[0]); //кол-во элементов в массиве BANKNOTES[], ктр. = 6 { //100, 200, 500, 1000, 2000, 5000 }
-std::vector<int> bank(NUM_DENOMINATIONS, 0);
+
 // Структура для хранения информации о купюрах
 struct ATMState {
     int bills[NUM_DENOMINATIONS] = { 0 };
@@ -190,7 +190,7 @@ int main() {
     std::cout << "Возвращайтесь скорее. Пока :-) !\n";
     return 0;
 }
-/*отличие что std::memset(&state, 0, sizeof(state)) от 
+/*отличие что std::memset(&state, 0, sizeof(state)) от
 for (int i = 0; i < MAX_BILLS; ++i) {
         state.bills[i] = 0;
 }

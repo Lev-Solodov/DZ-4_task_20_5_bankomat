@@ -42,14 +42,12 @@
 #include <cstring> // для memset
 #include <fstream>
 #include <iostream>
-#include <random>
 //#include <ctime>   // включает заголовочный файл ctime, содержащий функции для
 //работы с датой и временем std::time()
 #include <locale> //помощь для отображения кириличесских символов, т.е. русского языка
 const int MAX_BILLS = 1000; //максимальное колличество купюр
 const int BANKNOTES[] = { 100,  200,  500, 1000, 2000, 5000 }; //массив с номиналами купюр
 const int NUM_DENOMINATIONS = sizeof(BANKNOTES) / sizeof(BANKNOTES[0]); //кол-во элементов в массиве BANKNOTES[], ктр. = 6 { //100, 200, 500, 1000, 2000, 5000 }
-std::vector<int> bank(NUM_DENOMINATIONS, 0);
 // Структура для хранения информации о купюрах
 struct ATMState {
     int bills[NUM_DENOMINATIONS] = { 0 };
