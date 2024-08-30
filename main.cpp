@@ -32,7 +32,7 @@
 //#include <numeric> // для std::accumulate
 #include <cstdlib> // библиотека для работы с памятью, преобразования текста в числа, генерации случайных чисел и другие утилиты std::rand()
 #include <ctime>   // включает заголовочный файл ctime, содержащий функции для работы с датой и временем std::time()
-//#include <locale> //помощь для отображения кириличесских символов, т.е. русского языка
+#include <locale> //помощь для отображения кириличесских символов, т.е. русского языка
 //#include <filesystem> //для работы с файлами
 //#include <memory> //для работы с std::unique_ptr
 #include <algorithm> // для std::sort
@@ -63,7 +63,8 @@ void loadAtmState(ATMState& state) {
             moneyFillFile.close();
         }
         else {
-            std::cerr << "Не удалось открыть файл moneyFill.txt для чтения..\n";
+            //~ std::cerr << "Не удалось открыть файл moneyFill.txt для чтения..\n";
+            std::cerr << "The file moneyFill.txt could not be opened for reading.\n";
         }
         // Сортирую купюры по убыванию
         std::sort(bank.begin(), bank.end(), std::greater<int>());
@@ -86,7 +87,7 @@ void displayAtmState(const ATMState& state, std::vector<int>& bank) {
     for (int i = 0; i < bank.size(); ++i) {
         bank[i];
     }
-    std::cout << "\nВ банкомате имеются следующие купюры:\n";
+    std::wcout << L"\nВ банкомате имеются следующие купюры:\n";
     for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
         int count = 0;
         for (int denomination : bank) {
@@ -94,14 +95,15 @@ void displayAtmState(const ATMState& state, std::vector<int>& bank) {
                 count++;
             }
         }
-        std::cout << "Номинал " << BANKNOTES[i] << ": " << count << " купюр.\n";
+        std::wcout << L"Номинал " << BANKNOTES[i] << ": " << count << L" купюр.\n";
     }
-    std::cout << "Купюр: " << bank.size() << " на общую сумму: " << state.totalAmount << " рублей.\n";
+    std::wcout << L"Купюр: " << bank.size() << L" на общую сумму: " << state.totalAmount << L" рублей.\n";
     // Запись оставшихся купюр в файл
     //std::ofstream moneyFile("moneyFill.txt", std::ios::app);
     std::ofstream moneyFile("moneyFill.txt");
     if (!moneyFile.is_open()) {
-        std::cerr << "Не удалось открыть файл для записи\n";
+        //~ std::cerr << "Не удалось открыть файл для записи\n";
+        std::cerr << "The file could not be opened for writing\n";
         return;
     }
     for (int denomination : bank) {
@@ -120,15 +122,16 @@ void fillAtm(ATMState& state) {
             int random_index = std::rand() % NUM_DENOMINATIONS;
             bank.push_back(BANKNOTES[random_index]);
         }
-        std::cout << "Банкомат заполнен!\n";
+        std::wcout << L"Банкомат заполнен!\n";
     }
     else {
-        std::cout << "Банкомат уже не пуст!\n";
+        std::wcout << L"Банкомат уже не пуст!\n";
     }
     // Записываю данные в файл
     std::ofstream moneyFile("moneyFill.txt");
     if (!moneyFile.is_open()) {
-        std::cerr << "Не удалось открыть файл для записи\n";
+        //~ std::cerr << "Не удалось открыть файл для записи\n";
+        std::cerr << "The file could not be opened for writing\n";
         return;
     }
     // Выполняю итерацию по вектору банка и записываю каждый элемент в файл
@@ -143,17 +146,17 @@ void fillAtm(ATMState& state) {
 Пользователь указывает сумму с точностью до 100 рублей. Считайте, что каждый клиент обладает неограниченным балансом в системе и теоретически может снять любую сумму. Выдача происходит начиная с купюр большего номинала. Если запрошенная сумма не может быть снята из-за отсутствия подходящих купюр в машине, показывается сообщение, что эта операция невозможна. После выдачи денег на экран выдаётся информация о текущем состоянии банкомата: сколько сейчас купюр каждого номинала и общая сумма.*/
 bool withdrawMoney(ATMState& state, int amount, std::vector<int>& bank) {
     if (amount % 100 != 0) {
-        std::cout << "Сумма должна быть кратна 100.\n";
+        std::wcout << L"Сумма должна быть кратна 100.\n";
         return false;
     }
     if (amount < 0 || amount > state.totalAmount) {
-        std::cout << "Недостаточно средств в банкомате.\n";
+        std::wcout << L"Недостаточно средств в банкомате.\n";
         return false;
     }
     state.totalAmount -= amount;
     // Выдача денег
-    std::cout << "Выдано " << amount << " рублей.\n";
-    std::cout << "Выдача произведена успешно.";
+    std::wcout << L"Выдано " << amount << L" рублей.\n";
+    std::wcout << L"Выдача произведена успешно.";
     for (int i = NUM_DENOMINATIONS - 1; i >= 0 && amount > 0; --i) {
         while (amount >= BANKNOTES[i] && bank.size() > 0) {
             if (bank.back() == BANKNOTES[i]) {
@@ -194,7 +197,7 @@ void saveAtmState(ATMState& state) {
 
 int main() {
     setlocale(LC_ALL, ""); //setlocale(LC_ALL, "Rus");
-    std::cout << "Задание 4. Симуляция работы банкомата v0_1 UTF-8\n"; //Инициализирую строку как широкие символы, используя префикс L перед строками.
+    std::wcout << L"Задание 4. Симуляция работы банкомата v0_1 UTF-8\n"; //Инициализирую строку как широкие символы, используя префикс L перед строками.
     ATMState atmState;
     loadAtmState(atmState);
 
@@ -223,6 +226,6 @@ int main() {
         }
     } while (command != 'q');
 
-    std::cout << "Возвращайтесь скорее. Пока :-) !\n";
+    std::wcout << L"Возвращайтесь скорее. Пока :-) !\n";
     return 0;
 }
