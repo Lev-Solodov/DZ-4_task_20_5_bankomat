@@ -68,9 +68,18 @@ void loadAtmState(ATMState& state) {
         }
         // Сортирую купюры по убыванию
         std::sort(bank.begin(), bank.end(), std::greater<int>());
+        // Подсчитываю количество купюр каждого номинала
+        for (int i = 0; i < NUM_DENOMINATIONS; i++){
+            state.bills[i] = 0; // Initialize count for this denomination
+            for (denomination : bank) {
+                if (denomination == BANKNOTES[i]) {
+                    state.bills[i]++;
+                }
+            }
+        }
         // Вывожу информацию о текущем состоянии банкомата
         std::cout << "Current ATM state:\n";
-        for (int i = 0; i < NUM_DENOMINATIONS; i++){
+        for (int i = 0; i < NUM_DENOMINATIONS; ++i) {
             std::cout << BANKNOTES[i] << ": " << state.bills[i] << "\n";
         }
         std::cout << "Total amount: " << state.totalAmount << " rubles." << std::endl;
